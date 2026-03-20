@@ -167,7 +167,7 @@ llamaindex实战案例-新/
 
 ### 前置条件
 
-- Python 3.9+
+- Python 3.10+
 - Redis服务
 - CUDA环境（推荐，用于加速嵌入模型）
 

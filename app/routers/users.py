@@ -29,14 +29,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
 # 这个路由器将包含所有用户相关的路由
 router = APIRouter()
 
-
-# =====================================================
-# Pydantic数据模型定义
-# =====================================================
-
-
-
-
 # =====================================================
 # 模拟数据库
 # =====================================================
@@ -479,5 +471,3 @@ async def delete_user_account(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-
-

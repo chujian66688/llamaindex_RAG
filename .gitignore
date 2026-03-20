@@ -21,6 +21,7 @@ lib64/
 parts/
 sdist/
 var/
+
 *.egg-info/
 .installed.cfg
 *.egg
@@ -125,3 +126,4 @@ file/chroma_db/
 file/image/
 file/storage_bm25/
 file/logs/
+test/
