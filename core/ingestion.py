@@ -10,7 +10,7 @@ from llama_index.core import (
     SimpleDirectoryReader,
     load_index_from_storage
 )
-from llama_index.core.node_parser import SentenceSplitter, MarkdownNodeParser
+from llama_index.core.node_parser import SentenceSplitter, MarkdownNodeParser, MarkdownElementNodeParser
 from llama_index.core.extractors import TitleExtractor
 from llama_index.core.ingestion import IngestionPipeline, IngestionCache, DocstoreStrategy
 from llama_index.vector_stores.chroma import ChromaVectorStore
@@ -267,10 +267,41 @@ class DocumentIngestionPipeline:
     def get_documents(self):
         """加载已存在的索引和文档"""
         logger.info("读取已有向量数据库中的文档和索引...")
-        # 加载已经存储的索引、文档、向量
-        # self.index = VectorStoreIndex.from_vector_store(vector_store=self.chroma_vector_store,
-        #                                                 embed_model=Settings.embed_model,
-        #                                                 storage_context=self.storage_context)
-        # 加载已经存储的索引、文档、向量
-        self.index = load_index_from_storage(self.storage_context)
-        print("index:", self.index)
+        try:
+            # 尝试获取索引列表
+            index_store = self.storage_context.index_store
+            index_ids = index_store.list_indexes()
+
+            if not index_ids:
+                logger.info("未找到任何已有索引，将创建新索引")
+                return None
+
+            # 如果有多个索引，使用第一个（按时间排序，最近的优先）
+            if len(index_ids) > 1:
+                logger.warning(f"发现 {len(index_ids)} 个索引，将使用第一个: {index_ids[0]}")
+
+            # 使用第一个索引ID加载
+            index_id = index_ids[0]
+            self.index = load_index_from_storage(
+                self.storage_context,
+                index_id=index_id
+            )
+            logger.info(f"成功加载索引: {index_id}")
+            print("index:", self.index)
+            return self.index
+
+        except Exception as e:
+            logger.error(f"加载索引失败: {e}")
+            # 降级方案：直接从向量存储加载
+            try:
+                logger.info("尝试降级方案：从向量存储直接加载...")
+                self.index = VectorStoreIndex.from_vector_store(
+                    vector_store=self.chroma_vector_store,
+                    embed_model=Settings.embed_model,
+                    storage_context=self.storage_context
+                )
+                print("index (fallback):", self.index)
+                return self.index
+            except Exception as fallback_error:
+                logger.error(f"降级加载也失败: {fallback_error}")
+                return None

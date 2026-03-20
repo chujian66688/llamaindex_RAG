@@ -27,12 +27,12 @@ class MultimodalPDFProcessor:
             # 1. 使用 pymupdf4llm 提取 Markdown 和图片
             # write_images=True 会自动提取图片并保存到 image_path
             # image_path 是图片保存的文件夹
-            # image_format 也就是在 markdown 里引用图片的路径前缀
+            # image_format 也就是在 markdown 里保存时使用的文件格式
             md_text = pymupdf4llm.to_markdown(
                 pdf_path,
                 write_images=True,
                 image_path=self.image_output_dir,
-                image_format="png"  # 或者 "markdown"，html 兼容性更好
+                image_format="png"  # 可选：默认 'png' 或 'jpg'
             )
 
             # 2. 构造稳定的逻辑 ID (父文档 ID)

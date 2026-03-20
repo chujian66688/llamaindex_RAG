@@ -40,6 +40,8 @@ class RAGApplication:
     def __init__(self) -> None:
         # 文档摄取流水线（解析/切分/向量化/建索引）
         self.ingestion_pipeline = DocumentIngestionPipeline()
+        # 启动时尝试加载已有索引
+        self.ingestion_pipeline.get_documents()
         # RAG 工作流，基于索引构建；懒加载
         self.workflow: Optional[RAGWorkflow] = None
 
