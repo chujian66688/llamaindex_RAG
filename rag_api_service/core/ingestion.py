@@ -11,7 +11,7 @@ from llama_index.core import (
     SimpleDirectoryReader,
     load_index_from_storage
 )
-from llama_index.core.node_parser import SentenceSplitter, MarkdownNodeParser
+from llama_index.core.node_parser import SentenceSplitter, MarkdownNodeParser, MarkdownElementNodeParser
 from llama_index.core.extractors import TitleExtractor
 from llama_index.core.ingestion import IngestionPipeline, IngestionCache, DocstoreStrategy
 from llama_index.vector_stores.chroma import ChromaVectorStore
@@ -316,8 +316,7 @@ class DocumentIngestionPipeline:
         try:
             # 尝试获取索引列表
             index_store = self.storage_context.index_store
-            structs = index_store.index_structs()
-            index_ids = [s.index_id for s in structs]
+            index_ids = index_store.list_indexes()
 
             if not index_ids:
                 logger.info("未找到任何已有索引，将创建新索引")
