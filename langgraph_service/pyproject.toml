@@ -1,0 +1,18 @@
+[project]
+name = "langgraph-service"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "python-dotenv>=1.0.0",
+    "httpx>=0.28.1",
+    "sqlalchemy>=2.0.41",
+    "psycopg[binary]>=3.2.9",
+    "langgraph>=0.2.50",
+    "langgraph-checkpoint-postgres>=2.0.9",
+    "langchain-openai>=0.3.27",
+    "langmem>=0.0.27",
+    "mcp>=1.9.4",
+    "langchain-mcp-adapters>=0.1.0",
+    "langgraph-cli[inmem]>=0.1.70",
+    "langchain-tavily>=0.2.0",
+]

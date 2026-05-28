@@ -1,0 +1,21 @@
+[project]
+name = "rag-api-service"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "python-multipart>=0.0.9",
+    "python-dotenv>=1.0.0",
+    "chromadb>=0.4.0",
+    "llama-index>=0.10.0",
+    "llama-index-embeddings-huggingface>=0.5.4",
+    "llama-index-llms-dashscope>=0.4.0",
+    "llama-index-vector-stores-chroma>=0.4.2",
+    "llama-index-storage-docstore-redis>=0.3.0",
+    "llama-index-storage-index-store-redis>=0.4.0",
+    "llama-index-retrievers-bm25>=0.5.2",
+    "pymupdf4llm>=1.27.0",
+    "pymupdf>=1.27.2.2",
+    "sentence-transformers>=2.2.0",
+]

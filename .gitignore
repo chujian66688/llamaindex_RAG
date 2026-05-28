@@ -126,4 +126,8 @@ file/chroma_db/
 file/image/
 file/storage_bm25/
 file/logs/
-test/*
+test/
+
+# uv virtual environments
+.venv/
+*/.venv/
