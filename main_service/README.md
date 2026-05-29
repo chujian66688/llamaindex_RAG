@@ -136,8 +136,9 @@ uv run --project main_service python main_service/run.py
 
 `main_service` 使用 PostgreSQL 存储：
 
-- 用户信息表 `users`
-- 长期记忆表 `long_term_memories`
+- 用户信息表 `users`（含 username、email、full_name、hashed_password、role 等字段）
+- 长期记忆表 `long_term_memories`  暂时没有实现
+- 会话表 `conversations`（每个用户可有多个会话，对应 LangGraph Thread）
 
 启动时会自动建表，并自动创建默认管理员：
 

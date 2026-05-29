@@ -50,6 +50,10 @@ rag_api_service/
 |------|------|------|
 | POST | `/api/docs/upload` | 上传文件（multipart），触发文档摄取 |
 | GET  | `/api/docs/documents` | 返回已入库文档列表 |
+| GET  | `/api/docs/chunks/{doc_id}` | 获取文档分块详情（支持分页） |
+| DELETE | `/api/docs/documents/{doc_id}` | 删除单个文档 |
+| GET  | `/api/docs/config/chunk` | 获取当前分块配置 |
+| PUT  | `/api/docs/config/chunk` | 更新分块配置（chunk_size/chunk_overlap） |
 | POST | `/api/docs/reset` | 重置系统 |
 | POST | `/api/docs/query` | 知识库问答 |
 

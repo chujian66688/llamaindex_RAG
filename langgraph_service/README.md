@@ -19,12 +19,14 @@
 langgraph_service/
 ├── my_agent/
 │   ├── agent.py
-│   └── utils/
+│   ├── utils/
+│   │   ├── nodes.py
+│   │   ├── state.py
+│   │   └── tools.py
+│   └── writing_subgraph/
+│       ├── graph.py
 │       ├── nodes.py
-│       ├── state.py
-│       └── tools.py
-├── services/
-│   └── memory_repository.py
+│       └── state.py
 ├── config/
 │   └── settings.py
 ├── db.py
@@ -39,7 +41,7 @@ langgraph_service/
 - `my_agent/agent.py`：图构建入口
 - `my_agent/utils/nodes.py`：各个节点逻辑
 - `my_agent/utils/tools.py`：MCP 工具调用封装
-- `services/memory_repository.py`：长期记忆写入仓储
+- `my_agent/writing_subgraph/`：写作子图（包含 `writing_agent` 和 `review_agent`）
 - `langgraph.json`：LangGraph CLI 配置文件
 
 ---
@@ -52,22 +54,23 @@ langgraph_service/
 START
   -> summarize
   -> intent_router
-      -> knowledge_agent -> knowledge_guard -> finalize / fallback_search
-      -> writing_agent -> review_agent -> finalize
+      -> knowledge_agent -> knowledge_guard -> fallback_search / finalize
+      -> writing_workflow -> finalize
       -> chat_agent -> finalize
+  -> finalize
   -> END
 ```
 
 主要节点职责：
 
-- `summarize`：短期记忆摘要
+- `summarize`：短期记忆摘要（langmem SummarizationNode）
 - `intent_router`：识别是知识问答、写作还是普通聊天
 - `knowledge_agent`：通过 MCP 调知识库
-- `fallback_search`：知识库答不好时兜底搜索
-- `writing_agent`：写作生成
-- `review_agent`：审校与输出最终稿
+- `knowledge_guard`：守卫节点，检测回答质量，决定是否降级
+- `fallback_search`：知识库答不好时兜底搜索（Tavily）
+- `writing_workflow`：写作子图，内部包含 `writing_agent` 和 `review_agent`
 - `chat_agent`：普通聊天
-- `finalize`：收尾并写入长期记忆
+- `finalize`：收尾，提取 answer/sources/intent 返回给调用方
 
 ---
 

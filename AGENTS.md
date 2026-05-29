@@ -4,11 +4,11 @@
 
 | 服务 | 入口 | 端口 | 技术栈 |
 |---------|-----------|------|-------|
-| `chat-ai-ui-main/` | `npm run dev` | `:5173` | Vue 3, TypeScript, Vite, Element Plus, Tailwind CSS, Pinia |
-| `rag_api_service/` | `uv run --project rag_api_service python rag_api_service/run.py` | `:8011` | FastAPI, LlamaIndex, ChromaDB, BM25 — 完整 RAG 服务 |
+| `chat-ai-ui-main/` | `npm run dev` | `:5173` | Vue 3, TypeScript, Vite 6, Element Plus 2, Tailwind CSS 4, Pinia 3, Axios, Vue Router, Marked, Highlight.js |
+| `rag_api_service/` | `uv run --project rag_api_service python rag_api_service/run.py` | `:8011` | FastAPI, LlamaIndex, ChromaDB, BM25, Sentence-Transformers, PyMuPDF — 完整 RAG 服务 |
 | `mcp_service/` | `uv run --project mcp_service python mcp_service/run.py` | `:8010/mcp` | FastMCP 纯代理，HTTP 调 rag_api_service |
-| `langgraph_service/` | `uv run --project langgraph_service langgraph dev --config langgraph_service/langgraph.json` | `:2024` | LangGraph, LangMem, PostgreSQL checkpointer |
-| `main_service/` | `uv run --project main_service python main_service/run.py` | `:8000` | FastAPI, SQLAlchemy, JWT 鉴权 |
+| `langgraph_service/` | `uv run --project langgraph_service langgraph dev --config langgraph_service/langgraph.json` | `:2024` | LangGraph, LangMem, LangChain-Tavily, MCP Adapters, PostgreSQL checkpointer |
+| `main_service/` | `uv run --project main_service python main_service/run.py` | `:8000` | FastAPI, SQLAlchemy, PyJWT, pwdlib[argon2], langgraph-sdk |
 
 **启动顺序**: rag_api_service → mcp_service → langgraph_service → main_service → chat-ai-ui-main.
 
@@ -24,7 +24,7 @@ chat-ai-ui-main (Vue 3 :5173) → main_service (FastAPI HTTP :8000)
 ```
 
 - 所有环境变量从项目根目录 `.env` 加载（通过 `python-dotenv` 在 import 时自动加载）。
-- **需要 PostgreSQL**（`POSTGRES_URI` 在 `.env` 中）。默认连接串：`postgresql://postgres:123456@127.0.0.1:5432/langgraph_agents`。
+- **需要 PostgreSQL**（`POSTGRES_URL` 在 `.env` 中）。默认连接串：`postgresql+psycopg://postgres:123456@127.0.0.1:5432/langgraph_agents`。
 - **需要 Redis**（`rag_api_service` 使用，默认 `127.0.0.1:6379`）。
 - 默认管理员：`root` / `admin123`（`main_service` 启动时自动创建）。
 - `main_service` 通过 `langgraph-sdk` 调用 `langgraph_service`（`POST /runs/wait`、`GET /threads/{id}/state`、`DELETE /threads/{id}`）。
@@ -57,9 +57,18 @@ chat-ai-ui-main (Vue 3 :5173) → main_service (FastAPI HTTP :8000)
 
 ## LangGraph 图
 
-`START → summarize → intent_router → (knowledge_agent|writing_agent|chat_agent) → finalize → END`
-- `knowledge_agent` 调用 `mcp_service.query_rag`；守卫节点检测到回答质量差时降级到 `web_search` 工具。
-- 短期记忆通过 `langmem.SummarizationNode` 管理；长期记忆在 `finalize` 阶段写入 PostgreSQL。
+```text
+START → summarize → intent_router → (knowledge_agent | writing_workflow | chat_agent)
+                knowledge_agent → knowledge_guard → (fallback_search | finalize)
+                writing_workflow → finalize
+                fallback_search → finalize
+                chat_agent → finalize
+                finalize → END
+```
+
+- `knowledge_agent` 调用 `mcp_service.query_rag`；`knowledge_guard` 守卫节点检测到回答质量差时降级到 `fallback_search`（Tavily 搜索）。
+- `writing_workflow` 是写作子图，内部包含 `writing_agent` 和 `review_agent` 两个节点。
+- 短期记忆通过 `langmem.SummarizationNode` 管理；长期记忆工具（`create_manage_memory_tool`/`create_search_memory_tool`）已在 `tools.py` 中定义。
 - 线程/用户隔离：`main_service` 将用户名通过 `uuid5` 映射为确定性 UUID 作为 LangGraph thread ID。
 
 ## 命令（在项目根目录执行）
